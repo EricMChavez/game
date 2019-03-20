@@ -1,58 +1,49 @@
 <html>
 <head>
     <link rel="stylesheet" href="reset.css">
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser-arcade-physics.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser-arcade-physics.js"></script>
 </head>
 <body>
-
     <script>
-    var config = {
-        type: Phaser.AUTO,
-        width: 800,
-        height: 600,
-        physics: {
-            default: 'arcade',
-            arcade: {
-                gravity: { y: 200 }
-            }
-        },
-        scene: {
-            preload: preload,
-            create: create
+var config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    backgroundColor: '#1b1464',
+    parent: 'phaser-example',
+    physics: {
+        default: 'matter',
+        matter: {
+            debug: true,
+            gravity: {
+                y: 0.3
+            },
         }
-    };
-
-    var game = new Phaser.Game(config);
-
-    function preload ()
-    {
-        this.load.setBaseURL('http://labs.phaser.io');
-
-        this.load.image('sky', 'assets/skies/space3.png');
-        this.load.image('logo', 'assets/sprites/phaser3-logo.png');
-        this.load.image('red', 'assets/particles/red.png');
+    },
+    scene: {
+        preload: preload,
+        create: create
     }
+};
 
-    function create ()
-    {
-        this.add.image(400, 300, 'sky');
+var game = new Phaser.Game(config);
 
-        var particles = this.add.particles('red');
+function preload ()
+{
+    this.load.image('platform', 'platform.png');
+}
 
-        var emitter = particles.createEmitter({
-            speed: 100,
-            scale: { start: 1, end: 0 },
-            blendMode: 'ADD'
-        });
+function create ()
+{
+    var text = this.add.text(100, 0, 'Phaser 3', { font: '32px Arial', fill: '#00ff00' });
+    var text2 = this.add.text(100, -100, 'Phaser 3', { font: '32px Arial', fill: '#ffff00' });
 
-        var logo = this.physics.add.image(400, 100, 'logo');
+    var matterText = this.matter.add.gameObject(text, { shape: { type: 'circle', sides: 8, radius: 64 } }).setFrictionAir(0.001).setBounce(0.9);
+    var matterText2 = this.matter.add.gameObject(text2).setFrictionAir(0.001).setBounce(0.9);
 
-        logo.setVelocity(100, 200);
-        logo.setBounce(1, 1);
-        logo.setCollideWorldBounds(true);
+    this.matter.add.image(350, 450, 'platform', null, { isStatic: true }).setScale(2, 0.5).setAngle(10);
+}
 
-        emitter.startFollow(logo);
-    }
     </script>
 
 </body>
