@@ -7,7 +7,7 @@ var config = {
 		default: 'arcade',
 		arcade: {
 			gravity: { y: 2000 },
-			debug: true
+			debug: false
 		}
 	},
 	scene: {
@@ -36,6 +36,7 @@ function preload() {
 	this.load.image('egg', 'assets/egg.png');
 	this.load.tilemapTiledJSON('map', 'assets/tilemap.json');
 	this.load.image('tile', 'assets/tile.png');
+	this.load.image('spark', 'assets/blueParticle.png');
 }
 
 function create() {
@@ -49,19 +50,26 @@ function create() {
 	this.background1 = this.add.tileSprite(0, 0, 8000, config.height, 'background-1').setOrigin(0, 0);
 
 	const map = this.make.tilemap({ key: 'map' });
-	const tiles = map.addTilesetImage('tile', 'tile');
+	const tiles = map.addTilesetImage('tile', 'tile', 16, 16);
 
-	worldLayer = map.createStaticLayer('tileLayer', 0, 0).setScale(400);
-	worldLayer.width = 8000;
+	worldLayer = map.createDynamicLayer('tileLayer', 'tile', 0, 0).setScale(1);
+	worldLayer.setCollisionByExclusion([ -1 ]);
+
 	hearts = this.add.sprite(20, 20, 'hearts').setScrollFactor(0).setOrigin(0, 0).setDisplaySize(170, 34);
 
-	player = this.physics.add.sprite(100, 650, 'dude').setDisplaySize(124, 92);
+	player = this.physics.add.sprite(7000, 650, 'dude').setDisplaySize(124, 92);
 	player.justHurt = false;
 	player.justFired = false;
 
 	enemies = this.physics.add.sprite(1600, 650, 'slime').setDisplaySize(65, 50);
+	var particles = this.add.particles('spark');
 
+	emitter = particles.createEmitter({ scale: { start: 0.1, end: 0 } });
+
+	emitter.setSpeed(90);
+	emitter.setBlendMode(Phaser.BlendModes.ADD);
 	egg = this.physics.add.sprite(7250, 120, 'egg').setOrigin(0, 0).setDisplaySize(60, 77);
+	emitter.setPosition(egg.x + 30, egg.y + 50);
 
 	this.anims.create({
 		key: 'left',
@@ -172,6 +180,7 @@ function create() {
 
 	player.setCollideWorldBounds(true);
 	player.setSize(20, 30).setOffset(15, 5);
+	this.physics.add.collider(worldLayer, player);
 
 	function clash() {
 		enemies.anims.play('attack', true);
@@ -227,6 +236,7 @@ function create() {
 
 	this.physics.add.collider(player, enemies, clash);
 	this.physics.add.collider(arrows, enemies, hit);
+	worldLayer.setTileIndexCallback(13, hit, this);
 
 	player.health = 10;
 	player.heal = function() {
@@ -268,6 +278,7 @@ function update() {
 	} else {
 		egg.setGravity(0, -1950);
 	}
+	emitter.setPosition(egg.x + 30, egg.y + 50);
 	// enemies
 	if (player.x > enemies.x) {
 		enemies.setVelocityX(50);
@@ -288,12 +299,14 @@ function update() {
 	this.background6._tilePosition.x = -(this.cameras.main.midPoint.x * 0.5);
 	this.background7._tilePosition.x = -this.cameras.main.midPoint.x;
 }
+var previousPosition;
+
 //
 function updateHealth(health) {
 	hearts.anims.play(`heart-${health}`, true);
 }
 function playerControls() {
-	if (player.body.deltaY() > 0 && player.body.onFloor()) {
+	if (previousPosition > 0 && player.body.onFloor()) {
 		action = 'idol';
 	}
 	if (cursors.left.isDown) {
@@ -330,7 +343,7 @@ function playerControls() {
 		player.anims.play('jump', true);
 		if (player.body.onFloor()) {
 			action = 'jump';
-			player.setVelocityY(-1100);
+			player.setVelocityY(-900);
 		}
 	}
 	//slash
@@ -361,4 +374,5 @@ function playerControls() {
 		player.setVelocityX(0);
 		player.anims.play('shoot', true);
 	}
+	previousPosition = player.body.velocity.y;
 }
