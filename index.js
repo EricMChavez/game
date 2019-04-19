@@ -110,7 +110,7 @@ class Minotaur extends Enemies {
 		this.body.setSize(35, 40);
 		this.body.setOffset(32, 22);
 		this.justHurt = false;
-		this.health = 4;
+		this.health = 5;
 		this.walk = function() {
 			if (this.alive == true) {
 				if (this.alerted == true) {
@@ -123,6 +123,7 @@ class Minotaur extends Enemies {
 		this.hurt = function() {
 			if (this.health > 0 && this.justHurt == false) {
 				this.setTintFill(0xffffff);
+				killSX.play();
 				setTimeout(() => {
 					this.clearTint();
 				}, 100);
@@ -133,6 +134,7 @@ class Minotaur extends Enemies {
 				return --this.health;
 			} else if (this.health <= 0) {
 				this.alive = false;
+				killSX.play();
 				this.anims.play('minotaur-die', true);
 				setTimeout(() => {
 					this.destroy();
@@ -145,7 +147,7 @@ class Minotaur extends Enemies {
 				this.justAttacked = true;
 				this.body.velocity.x = 0;
 				this.anims.play('minotaur-attack', true);
-				if (this.anims.currentFrame.index == 4 && this.anims.currentAnim.key == 'minotaur-attack') {
+				if (this.anims.currentFrame.index == 3 && this.anims.currentAnim.key == 'minotaur-attack') {
 					player.hurt();
 				}
 			}
@@ -215,9 +217,33 @@ function preload() {
 	this.load.spritesheet('door', 'assets/door.png', { frameWidth: 18, frameHeight: 48 });
 	this.load.spritesheet('switch', 'assets/switch.png', { frameWidth: 16, frameHeight: 16 });
 	this.load.image('bow', 'assets/bow.png');
+	this.load.audio('music', 'assets/music.mp3');
+	this.load.audio('jumpSX', 'assets/jump.wav');
+	this.load.audio('shootSX', 'assets/shoot.wav');
+	this.load.audio('slashSX', 'assets/slash.wav');
+	this.load.audio('stepSX', 'assets/step.wav');
+	this.load.audio('hurtSX', 'assets/hurt.wav');
+	this.load.audio('impactSX', 'assets/impact.wav');
+	this.load.audio('killSX', 'assets/kill.wav');
+	this.load.audio('doorOpen', 'assets/doorOpen.mp3');
+	this.load.audio('doorClose', 'assets/doorClose.mp3');
+	this.load.audio('upgrade', 'assets/upgrade.wav');
+	this.load.image('logo', 'assets/logo.png');
 }
 
 function create() {
+	music = this.sound.add('music', { loop: true, volume: 0.3 });
+	music.play();
+	jumpSX = this.sound.add('jumpSX', { volume: 0.2 });
+	shootSX = this.sound.add('shootSX', { volume: 0.5 });
+	slashSX = this.sound.add('slashSX', { volume: 0.7 });
+	hurtSX = this.sound.add('hurtSX', { volume: 0.8 });
+	impactSX = this.sound.add('impactSX', { volume: 0.1 });
+	killSX = this.sound.add('killSX', { volume: 0.4 });
+	stepSX = this.sound.add('stepSX', { volume: 0.2 });
+	doorOpen = this.sound.add('doorOpen', { volume: 0.3 });
+	doorClose = this.sound.add('doorClose', { volume: 0.3 });
+	upgrade = this.sound.add('upgrade', { volume: 0.8 });
 	this.physics.world.setBounds(0, 0, 8000, 735);
 	this.background7 = this.add.tileSprite(0, 0, 8000, config.height, 'background-7').setOrigin(0, 0);
 	this.background6 = this.add.tileSprite(0, 0, 8000, config.height, 'background-6').setOrigin(0, 0);
@@ -228,6 +254,8 @@ function create() {
 	this.background1 = this.add.tileSprite(0, 0, 8000, config.height, 'background-1').setOrigin(0, 0);
 	this.add.image(450, 310, 'keyX').setScale(3);
 	this.add.image(900, 300, 'arrowkeys').setScale(3);
+	this.add.image(680, 100, 'logo');
+
 	keyHold = this.add.text(3700, 295, 'HOLD', { fontFamily: 'Arial', fontSize: 24, color: '#d6bb9a' });
 	keyY = this.add.image(3830, 310, 'keyZ').setScale(3);
 	bow = this.physics.add.staticImage(3788, 250, 'bow').setScale(2);
@@ -367,12 +395,14 @@ function create() {
 	});
 	hearts = this.add.sprite(20, 20, 'hearts').setScrollFactor(0).setOrigin(0, 0).setDisplaySize(170, 34);
 
-	player = this.physics.add.sprite(100, 600, 'dude').setDisplaySize(124, 92);
+	player = this.physics.add.sprite(100, 700, 'dude').setDisplaySize(124, 92);
 
 	player.justHurt = false;
 	player.justFired = false;
+	player.moving = false;
 	player.bow = false;
 	player.activate = function() {
+		upgrade.play();
 		player.bow = true;
 		bow.destroy();
 		keyHold.visible = true;
@@ -506,10 +536,12 @@ function create() {
 			this.setFrame(1);
 			this.active = true;
 			door0.open();
+			doorOpen.play();
 		} else {
 			this.setFrame(0);
 			this.active = false;
 			door0.close();
+			doorClose.play();
 		}
 	};
 	switch1 = this.physics.add.sprite(6110, 610, 'switch').setImmovable(true).setScale(4);
@@ -525,14 +557,21 @@ function create() {
 		}
 		if (door1.body.enable == true) {
 			door1.open();
+			doorOpen.play();
 		} else {
 			door1.close();
+			doorClose.play();
 		}
-		if (door2.body.enable == true) {
-			door2.open();
-		} else {
-			door2.close();
-		}
+		setTimeout(() => {
+			if (door2.body.enable == true) {
+				door2.open();
+				doorOpen.play();
+			} else {
+				door2.close();
+				doorClose.play();
+			}
+		}, 500);
+
 		if (puzzlePlatform.isPlaying()) {
 			puzzlePlatform.pause();
 		} else {
@@ -553,8 +592,10 @@ function create() {
 		}
 		if (door1.body.enable == true) {
 			door1.open();
+			doorOpen.play();
 		} else {
 			door1.close();
+			doorClose.play();
 		}
 	};
 	player.setCollideWorldBounds(true);
@@ -578,6 +619,7 @@ function create() {
 	this.physics.add.collider([ platform1, platform2, platform3, platform4, platform5, door0, door1, door2 ], player);
 
 	function hit(arrow, target) {
+		impactSX.play();
 		setTimeout(() => {
 			arrow.setPosition(0, 793);
 		}, 100);
@@ -599,6 +641,7 @@ function create() {
 	player.hurt = function() {
 		if (player.health > 0 && player.justHurt == false && !cursors.down.isDown) {
 			player.setTintFill(0xffffff);
+			hurtSX.play();
 			setTimeout(() => {
 				player.clearTint();
 			}, 100);
@@ -613,7 +656,7 @@ function create() {
 		}
 	};
 	worldLayer.setTileIndexCallback(13, player.hurt, this);
-	worldLayer.setTileIndexCallback(12, player.hurt, this);
+	worldLayer.setTileIndexCallback(14, player.hurt, this);
 	var particles = this.add.particles('spark');
 	egg = this.physics.add.sprite(7250, 120, 'egg').setOrigin(0, 0).setDisplaySize(60, 77);
 	emitter = particles.createEmitter({ scale: { start: 0.1, end: 0 } });
@@ -693,12 +736,14 @@ function playerControls() {
 	} else if (action == 'idol') {
 		player.setVelocityX(0);
 		player.anims.play('stand', true);
+		stepSX.stop();
 	}
 	//Jump
 	if (cursors.up.isDown && action == 'idol') {
 		player.anims.play('jump', true);
 		if (player.body.onFloor() || player.body.touching.down) {
 			action = 'jump';
+			jumpSX.play();
 			player.setVelocityY(-900);
 		}
 	}
@@ -708,7 +753,11 @@ function playerControls() {
 			player.setVelocityX(0);
 		}
 		player.anims.play('slash', true);
+
 		action = 'slash';
+		setTimeout(() => {
+			slashSX.play();
+		}, 250);
 		setTimeout(() => {
 			action = 'idol';
 		}, 450);
@@ -717,7 +766,7 @@ function playerControls() {
 	if (player.anims.currentFrame.index == 8 && player.anims.currentAnim.key == 'shoot' && player.justFired == false) {
 		player.justFired = true;
 		arrow.fire(player.x, player.y, player.flipX);
-
+		shootSX.play();
 		setTimeout(function() {
 			player.justFired = false;
 		}, 500);
@@ -740,4 +789,16 @@ function playerControls() {
 		player.anims.play('shoot', true);
 	}
 	previousPosition = player.body.velocity.y;
+
+	if (
+		(player.body.onFloor() || player.body.touching.down) &&
+		(player.body.velocity.x > 10 || player.body.velocity.x < -10) &&
+		player.moving == false
+	) {
+		player.moving = true;
+		stepSX.play();
+		setTimeout(function() {
+			player.moving = false;
+		}, 300);
+	}
 }
