@@ -520,6 +520,7 @@ function create() {
 
 	door2 = this.physics.add.sprite(6550, 680, 'door').setImmovable(true).setScale(2.3);
 	door2.body.setAllowGravity(false);
+	door2.closed = false;
 	door2.open = function() {
 		this.setFrame(1);
 		this.body.setEnable(false);
@@ -690,6 +691,10 @@ function update() {
 
 	for (let i in enemies.getChildren()) {
 		enemies.getChildren()[i].patrol();
+	}
+	if (player.x > 7000 && door2.closed == false) {
+		door2.close();
+		door2.closed = true;
 	}
 	//background movement
 	this.background2._tilePosition.x = -(this.cameras.main.midPoint.x * 0.1);
