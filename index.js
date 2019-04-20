@@ -120,6 +120,9 @@ class Minotaur extends Enemies {
 				}
 			}
 		};
+		this.hit = function() {
+			this.hurt();
+		};
 		this.hurt = function() {
 			if (this.health > 0 && this.justHurt == false) {
 				this.setTintFill(0xffffff);
@@ -130,7 +133,7 @@ class Minotaur extends Enemies {
 				this.justHurt = true;
 				setTimeout(() => {
 					this.justHurt = false;
-				}, 1000);
+				}, 400);
 				return --this.health;
 			} else if (this.health <= 0) {
 				this.alive = false;
@@ -147,13 +150,18 @@ class Minotaur extends Enemies {
 				this.justAttacked = true;
 				this.body.velocity.x = 0;
 				this.anims.play('minotaur-attack', true);
-				if (this.anims.currentFrame.index == 3 && this.anims.currentAnim.key == 'minotaur-attack') {
-					player.hurt();
-				}
+				setTimeout(() => {
+					if (
+						!(player.y > this.body.y + 100 || player.y < this.body.y - 100) &&
+						!(player.x > this.body.x + 100 || player.x < this.body.x - 60)
+					) {
+						player.hurt();
+					}
+				}, 300);
 			}
 			setTimeout(() => {
 				this.justAttacked = false;
-			}, 800);
+			}, 1000);
 		};
 		this.alert = function() {
 			if (this.alerted == true && this.justAttacked == false) {
@@ -232,7 +240,7 @@ function preload() {
 }
 
 function create() {
-	music = this.sound.add('music', { loop: true, volume: 0.3 });
+	music = this.sound.add('music', { loop: true, volume: 0.25 });
 	music.play();
 	jumpSX = this.sound.add('jumpSX', { volume: 0.2 });
 	shootSX = this.sound.add('shootSX', { volume: 0.5 });
@@ -240,9 +248,9 @@ function create() {
 	hurtSX = this.sound.add('hurtSX', { volume: 0.8 });
 	impactSX = this.sound.add('impactSX', { volume: 0.1 });
 	killSX = this.sound.add('killSX', { volume: 0.4 });
-	stepSX = this.sound.add('stepSX', { volume: 0.2 });
-	doorOpen = this.sound.add('doorOpen', { volume: 0.3 });
-	doorClose = this.sound.add('doorClose', { volume: 0.3 });
+	stepSX = this.sound.add('stepSX', { volume: 0.1 });
+	doorOpen = this.sound.add('doorOpen', { volume: 0.8 });
+	doorClose = this.sound.add('doorClose', { volume: 0.8 });
 	upgrade = this.sound.add('upgrade', { volume: 0.8 });
 	this.physics.world.setBounds(0, 0, 8000, 735);
 	this.background7 = this.add.tileSprite(0, 0, 8000, config.height, 'background-7').setOrigin(0, 0);
@@ -395,7 +403,7 @@ function create() {
 	});
 	hearts = this.add.sprite(20, 20, 'hearts').setScrollFactor(0).setOrigin(0, 0).setDisplaySize(170, 34);
 
-	player = this.physics.add.sprite(100, 700, 'dude').setDisplaySize(124, 92);
+	player = this.physics.add.sprite(6600, 700, 'dude').setDisplaySize(124, 92);
 
 	player.justHurt = false;
 	player.justFired = false;
@@ -428,6 +436,19 @@ function create() {
 	platform4.body.setAllowGravity(false);
 	platform5 = this.physics.add.image(5500, 350, 'platform').setImmovable(true).setOrigin(0.5, 0.5);
 	platform5.body.setAllowGravity(false);
+
+	platform6 = this.physics.add.image(7920, 570, 'platform').setImmovable(true).setOrigin(0.5, 0.5);
+	platform6.body.setAllowGravity(false);
+
+	platform7 = this.physics.add.image(7770, 470, 'platform').setImmovable(true).setOrigin(0.5, 0.5);
+	platform7.body.setAllowGravity(false);
+
+	platform8 = this.physics.add.image(7620, 370, 'platform').setImmovable(true).setOrigin(0.5, 0.5);
+	platform8.body.setAllowGravity(false);
+
+	platform9 = this.physics.add.image(7470, 270, 'platform').setImmovable(true).setOrigin(0.5, 0.5);
+	platform9.body.setAllowGravity(false);
+
 	this.tweens.timeline({
 		targets: [ platform1.body.velocity, platform3.body.velocity ],
 		loop: -1,
@@ -599,6 +620,66 @@ function create() {
 			doorClose.play();
 		}
 	};
+	platform7.disableBody();
+	platform7.alpha = 0.5;
+	platform8.disableBody();
+	platform8.alpha = 0.5;
+	platform9.disableBody();
+	platform9.alpha = 0.5;
+	switch3 = this.physics.add.sprite(6608, 530, 'switch').setImmovable(true).setScale(4);
+	switch3.body.setAllowGravity(false);
+	switch3.active = false;
+	switch3.hit = function() {
+		platform6.disableBody();
+		platform6.alpha = 0.5;
+		platform7.enableBody();
+		platform7.alpha = 1;
+		this.setFrame(1);
+		setTimeout(() => {
+			platform7.disableBody();
+			platform7.alpha = 0.5;
+			platform6.enableBody();
+			platform6.alpha = 1;
+			this.setFrame(0);
+			impactSX.play();
+		}, 2500);
+	};
+	switch4 = this.physics.add.sprite(6608, 430, 'switch').setImmovable(true).setScale(4);
+	switch4.body.setAllowGravity(false);
+	switch4.active = false;
+	switch4.hit = function() {
+		{
+			platform7.disableBody();
+			platform7.alpha = 0.5;
+			platform8.enableBody();
+			platform8.alpha = 1;
+			this.setFrame(1);
+			setTimeout(() => {
+				platform8.disableBody();
+				platform8.alpha = 0.5;
+				this.setFrame(0);
+				impactSX.play();
+			}, 2500);
+		}
+	};
+	switch5 = this.physics.add.sprite(6608, 330, 'switch').setImmovable(true).setScale(4);
+	switch5.body.setAllowGravity(false);
+	switch5.active = false;
+	switch5.hit = function() {
+		{
+			platform8.disableBody();
+			platform8.alpha = 0.5;
+			platform9.enableBody();
+			platform9.alpha = 1;
+			this.setFrame(1);
+			setTimeout(() => {
+				platform9.disableBody();
+				platform9.alpha = 0.5;
+				this.setFrame(0);
+				impactSX.play();
+			}, 2500);
+		}
+	};
 	player.setCollideWorldBounds(true);
 	player.setSize(20, 30).setOffset(15, 5);
 
@@ -606,7 +687,13 @@ function create() {
 	this.physics.add.collider(arrow, enemies.getChildren(), hit, null, this);
 	player.setCollideWorldBounds(true);
 	player.setSize(20, 30).setOffset(15, 5);
-	this.physics.add.collider(arrow, [ switch0, switch1, switch2, door0, door1, door2 ], hit, null, this);
+	this.physics.add.collider(
+		arrow,
+		[ switch0, switch1, switch2, switch3, switch4, switch5, door0, door1, door2 ],
+		hit,
+		null,
+		this
+	);
 	this.physics.add.collider(
 		arrow,
 		[ worldLayer, platform1, platform2, platform3, platform4, platform5, door0, door1, door2 ],
@@ -614,10 +701,39 @@ function create() {
 		null,
 		this
 	);
+	egg = this.physics.add.sprite(7250, 120, 'egg').setOrigin(0, 0).setDisplaySize(60, 77);
 	this.physics.add.collider(enemies.getChildren(), player, attack, null, this);
 	this.physics.add.collider(worldLayer, [ player, enemies ]);
 	this.physics.add.overlap(player, bow, player.activate);
-	this.physics.add.collider([ platform1, platform2, platform3, platform4, platform5, door0, door1, door2 ], player);
+	this.physics.add.overlap(player, egg, winGame);
+	this.physics.add.collider(
+		[
+			platform1,
+			platform2,
+			platform3,
+			platform4,
+			platform5,
+			platform6,
+			platform7,
+			platform8,
+			platform9,
+			door0,
+			door1,
+			door2
+		],
+		player
+	);
+	camera = this.cameras.main;
+	gameWon = false;
+	function winGame() {
+		if (gameWon == false) {
+			gameWon = true;
+			camera.fadeOut(1000, 255, 255, 255);
+			setTimeout(() => {
+				window.location.replace('https://ericmchavez.github.io/happy-birthday/');
+			}, 1000);
+		}
+	}
 
 	function hit(arrow, target) {
 		impactSX.play();
@@ -659,7 +775,7 @@ function create() {
 	worldLayer.setTileIndexCallback(13, player.hurt, this);
 	worldLayer.setTileIndexCallback(14, player.hurt, this);
 	var particles = this.add.particles('spark');
-	egg = this.physics.add.sprite(7250, 120, 'egg').setOrigin(0, 0).setDisplaySize(60, 77);
+
 	emitter = particles.createEmitter({ scale: { start: 0.1, end: 0 } });
 	emitter.setSpeed(90);
 	emitter.setBlendMode(Phaser.BlendModes.ADD);
