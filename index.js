@@ -403,7 +403,7 @@ function create() {
 	});
 	hearts = this.add.sprite(20, 20, 'hearts').setScrollFactor(0).setOrigin(0, 0).setDisplaySize(170, 34);
 
-	player = this.physics.add.sprite(100, 700, 'dude').setDisplaySize(124, 92);
+	player = this.physics.add.sprite(6700, 700, 'dude').setDisplaySize(124, 92);
 
 	player.justHurt = false;
 	player.justFired = false;
@@ -701,7 +701,13 @@ function create() {
 		null,
 		this
 	);
+	var particles = this.add.particles('spark');
+	emitter = particles.createEmitter({ scale: { start: 0.1, end: 0 } });
+	emitter.setSpeed(90);
+	emitter.setBlendMode(Phaser.BlendModes.ADD);
 	egg = this.physics.add.sprite(7250, 120, 'egg').setOrigin(0, 0).setDisplaySize(60, 77);
+	emitter.setPosition(egg.x + 30, egg.y + 50);
+
 	this.physics.add.collider(enemies.getChildren(), player, attack, null, this);
 	this.physics.add.collider(worldLayer, [ player, enemies ]);
 	this.physics.add.overlap(player, bow, player.activate);
@@ -729,6 +735,11 @@ function create() {
 		if (gameWon == false) {
 			gameWon = true;
 			camera.fadeOut(1000, 255, 255, 255);
+			setInterval(function() {
+				if (music.volume != 0.0) {
+					music.volume -= 0.01;
+				}
+			}, 50);
 			setTimeout(() => {
 				window.location.replace('https://ericmchavez.github.io/happy-birthday/');
 			}, 1000);
@@ -774,12 +785,6 @@ function create() {
 	};
 	worldLayer.setTileIndexCallback(13, player.hurt, this);
 	worldLayer.setTileIndexCallback(14, player.hurt, this);
-	var particles = this.add.particles('spark');
-
-	emitter = particles.createEmitter({ scale: { start: 0.1, end: 0 } });
-	emitter.setSpeed(90);
-	emitter.setBlendMode(Phaser.BlendModes.ADD);
-	emitter.setPosition(egg.x + 30, egg.y + 50);
 
 	z = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
 	x = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
