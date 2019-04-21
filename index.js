@@ -403,7 +403,7 @@ function create() {
 	});
 	hearts = this.add.sprite(20, 20, 'hearts').setScrollFactor(0).setOrigin(0, 0).setDisplaySize(170, 34);
 
-	player = this.physics.add.sprite(6700, 700, 'dude').setDisplaySize(124, 92);
+	player = this.physics.add.sprite(100, 700, 'dude').setDisplaySize(124, 92);
 
 	player.justHurt = false;
 	player.justFired = false;
