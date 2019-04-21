@@ -245,7 +245,7 @@ function create() {
 	jumpSX = this.sound.add('jumpSX', { volume: 0.2 });
 	shootSX = this.sound.add('shootSX', { volume: 0.5 });
 	slashSX = this.sound.add('slashSX', { volume: 0.7 });
-	hurtSX = this.sound.add('hurtSX', { volume: 0.8 });
+	hurtSX = this.sound.add('hurtSX', { volume: 0.6 });
 	impactSX = this.sound.add('impactSX', { volume: 0.1 });
 	killSX = this.sound.add('killSX', { volume: 0.4 });
 	stepSX = this.sound.add('stepSX', { volume: 0.1 });
