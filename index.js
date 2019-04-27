@@ -741,7 +741,7 @@ function create() {
 				}
 			}, 50);
 			setTimeout(() => {
-				window.location.replace('https://ericmchavez.github.io/happy-birthday/');
+				window.location.replace('https://ericmchavez.github.io/davids-birthday/');
 			}, 1000);
 		}
 	}
