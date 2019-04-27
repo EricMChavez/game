@@ -1,6 +1,6 @@
 var config = {
 	type: Phaser.AUTO,
-	width: 1439,
+	width: window.innerWidth,
 	height: 793,
 	pixelArt: true,
 	physics: {
@@ -802,7 +802,7 @@ var previousPosition;
 function update() {
 	//player controls!
 	playerControls();
-	if (egg.y > 140) {
+	if (egg.y > 130) {
 		egg.setGravity(0, -2050);
 	} else {
 		egg.setGravity(0, -1950);
